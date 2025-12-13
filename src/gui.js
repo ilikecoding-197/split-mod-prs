@@ -161,6 +161,7 @@ IDE_Morph.prototype.setDefaultTheme = function () {
   IDE_Morph.prototype.buttonContrast = 30;
   IDE_Morph.prototype.backgroundColor = new Color(10, 10, 10);
   IDE_Morph.prototype.frameColor = SpriteMorph.prototype.paletteColor;
+  IDE_Morph.prototype.borderColor = new Color(64, 64, 64);
 
   IDE_Morph.prototype.groupColor =
     SpriteMorph.prototype.paletteColor.lighter(5);
@@ -173,7 +174,7 @@ IDE_Morph.prototype.setDefaultTheme = function () {
   ];
   IDE_Morph.prototype.rotationStyleColors = IDE_Morph.prototype.tabColors;
   IDE_Morph.prototype.appModeColor = BLACK;
-  IDE_Morph.prototype.padding = 1;
+  IDE_Morph.prototype.padding = 0;
 
   SpriteIconMorph.prototype.labelColor = IDE_Morph.prototype.buttonLabelColor;
   CostumeIconMorph.prototype.labelColor = IDE_Morph.prototype.buttonLabelColor;
@@ -199,19 +200,20 @@ IDE_Morph.prototype.setBrightTheme = function () {
 
   IDE_Morph.prototype.buttonContrast = 30;
   IDE_Morph.prototype.backgroundColor = new Color(220, 220, 230);
-  IDE_Morph.prototype.frameColor = new Color(240, 240, 245);
+  IDE_Morph.prototype.frameColor = new Color(230, 240, 255);
+  IDE_Morph.prototype.borderColor = new Color(212, 212, 212);
 
   IDE_Morph.prototype.groupColor = WHITE;
   IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
   IDE_Morph.prototype.buttonLabelColor = new Color(87, 94, 117);
   IDE_Morph.prototype.tabColors = [
-    IDE_Morph.prototype.frameColor,
-    IDE_Morph.prototype.frameColor.lighter(50),
+    new Color(217, 227, 242),
+    new Color(230, 240, 255),
     IDE_Morph.prototype.groupColor,
   ];
   IDE_Morph.prototype.rotationStyleColors = IDE_Morph.prototype.tabColors;
   IDE_Morph.prototype.appModeColor = IDE_Morph.prototype.frameColor;
-  IDE_Morph.prototype.padding = 1;
+  IDE_Morph.prototype.padding = 0;
 
   SpriteIconMorph.prototype.labelColor = IDE_Morph.prototype.buttonLabelColor;
   CostumeIconMorph.prototype.labelColor = IDE_Morph.prototype.buttonLabelColor;
@@ -348,7 +350,7 @@ IDE_Morph.prototype.init = function (config) {
   this.hasChangedMedia = false;
 
   this.isAnimating = true;
-  this.paletteWidth = 200; // initially same as logo width
+  this.paletteWidth = 250;
   this.stageRatio = 1; // for IDE animations, e.g. when zooming
   this.performerMode = false;
   this.performerScale = 1;
@@ -368,7 +370,7 @@ IDE_Morph.prototype.init = function (config) {
   IDE_Morph.uber.init.call(this);
 
   // override inherited properites:
-  this.color = this.backgroundColor;
+  this.color = this.frameColor;
 
   // initialize the primitive blocks dictionary
   SpriteMorph.prototype.initBlocks();
@@ -1138,7 +1140,7 @@ IDE_Morph.prototype.createProjectControlBar = function () {
   }
   this.projectControlBar = new Morph();
   this.projectControlBar.color = this.frameColor;
-  this.projectControlBar.setHeight(28); // height is fixed
+  this.projectControlBar.setHeight(44); // height is fixed
 
   this.add(this.projectControlBar);
 
@@ -1207,7 +1209,7 @@ IDE_Morph.prototype.createProjectControlBar = function () {
     null, // colors
     this, // the IDE is the target
     "stopAllScripts",
-    [new SymbolMorph("octagon", 16), new SymbolMorph("square", 16)],
+    [new SymbolMorph("octagon", 20), new SymbolMorph("square", 20)],
     () =>
       this.stage // query
         ? myself.stage.enableCustomHatBlocks &&
@@ -1247,7 +1249,7 @@ IDE_Morph.prototype.createProjectControlBar = function () {
     null, //colors,
     this, // the IDE is the target
     "togglePauseResume",
-    [new SymbolMorph("pause", 14), new SymbolMorph("pointRight", 16)],
+    [new SymbolMorph("pause", 20), new SymbolMorph("pointRight", 20)],
     () => this.isPaused() // query
   );
 
@@ -1273,7 +1275,7 @@ IDE_Morph.prototype.createProjectControlBar = function () {
   this.projectControlBar.pauseButton = pauseButton; // for refreshing
 
   // startButton
-  button = new PushButtonMorph(this, "pressStart", new SymbolMorph("flag", 16));
+  button = new PushButtonMorph(this, "pressStart", new SymbolMorph("flag", 20));
   button.stroke = 0;
   button.corner = 4;
   button.color = colors[0];
@@ -1357,13 +1359,13 @@ IDE_Morph.prototype.createProjectControlBar = function () {
     ) {
       myself.stage.threads.pauseAll(myself.stage);
       pauseSymbols = [
-        new SymbolMorph("pause", 12),
-        new SymbolMorph("stepForward", 14),
+        new SymbolMorph("pause", 20),
+        new SymbolMorph("stepForward", 20),
       ];
     } else {
       pauseSymbols = [
-        new SymbolMorph("pause", 12),
-        new SymbolMorph("pointRight", 14),
+        new SymbolMorph("pause", 20),
+        new SymbolMorph("pointRight", 20),
       ];
     }
     pauseButton.labelString = pauseSymbols;
@@ -1772,6 +1774,14 @@ IDE_Morph.prototype.createCategories = function () {
     });
   };
 
+  this.categories.render = function (ctx) {
+    ctx.strokeStyle = myself.borderColor.toString();
+    ctx.fillStyle = this.color.toString();
+
+    ctx.fillRect(0, 0, this.width(), this.height())
+    ctx.strokeRect(0, 0, this.width(), this.height())
+  }
+
   function changePalette(category) {
     return () => {
       myself.currentCategory = category;
@@ -1974,6 +1984,14 @@ IDE_Morph.prototype.createPalette = function (forSearching) {
     this.palette.isForSearching = true;
     this.palette.color.a = 1;
 
+    this.palette.render = function (ctx) {
+      ctx.strokeStyle = myself.borderColor.toString();
+      ctx.fillStyle = this.color.toString();
+      
+      ctx.fillRect(0, 0, this.width(), this.height())
+      ctx.strokeRect(0, 0, this.width(), this.height())
+    }
+
     // search toolbar (floating cancel button):
     /* commented out for now
         this.palette.toolBar = new PushButtonMorph(
@@ -2097,7 +2115,7 @@ IDE_Morph.prototype.createOldSpriteBar = function () {
     padlock,
     thumbnail,
     tabCorner = 10, //15,
-    tabPadding = 5, //3,
+    tabPadding = 10, //3,
     tabColors = this.tabColors,
     tabBar = new AlignmentMorph("row", -tabCorner * 0.5),
     tab,
@@ -2331,6 +2349,7 @@ IDE_Morph.prototype.createOldSpriteBar = function () {
   tab.labelShadowOffset = new Point(-1, -1);
   tab.labelShadowColor = tabColors[1];
   tab.labelColor = this.buttonLabelColor;
+  tab.fontSize = 12;
 
   tab.getPressRenderColor = function () {
     if (
@@ -2366,6 +2385,7 @@ IDE_Morph.prototype.createOldSpriteBar = function () {
   tab.labelShadowOffset = new Point(-1, -1);
   tab.labelShadowColor = tabColors[1];
   tab.labelColor = this.buttonLabelColor;
+  tab.fontSize = 12;
   tab.fixLayout();
   tabBar.add(tab);
 
@@ -2382,6 +2402,7 @@ IDE_Morph.prototype.createOldSpriteBar = function () {
   tab.labelShadowOffset = new Point(-1, -1);
   tab.labelShadowColor = tabColors[1];
   tab.labelColor = this.buttonLabelColor;
+  tab.fontSize = 12;
   tab.fixLayout();
   tabBar.add(tab);
 
@@ -2412,7 +2433,8 @@ IDE_Morph.prototype.createOldSpriteBar = function () {
 
 IDE_Morph.prototype.createSpriteEditor = function () {
   // assumes that the logo pane and the stage have already been created
-  var scripts = this.currentSprite.scripts;
+  var myself = this,
+    scripts = this.currentSprite.scripts;
 
   if (this.spriteEditor) {
     this.spriteEditor.destroy();
@@ -2806,7 +2828,7 @@ IDE_Morph.prototype.fixLayout = function (situation) {
     // categories
     this.categories.setLeft(this.logo.left());
     this.categories.setTop(
-      77 //this.oldSpriteBar.bottom()//cnf.hideControls ? this.top() + border : this.oldSpriteBar.bottom()//this.logo.bottom() - this.oldSpriteBar.
+      92 //this.oldSpriteBar.bottom()//cnf.hideControls ? this.top() + border : this.oldSpriteBar.bottom()//this.logo.bottom() - this.oldSpriteBar.
     );
     this.extensionButton.setTop(world.bottom() - 52);
     this.extensionButton.setHeight(52);
@@ -2835,7 +2857,7 @@ IDE_Morph.prototype.fixLayout = function (situation) {
   this.palette.setTop(
     cnf.hideControls
       ? this.top() + border
-      : this.controlBar.bottom() + padding + 29
+      : this.controlBar.bottom() + padding + 44
   );
   this.palette.setHeight(this.bottom() - this.palette.top() - border);
   this.palette.setWidth(this.paletteWidth);
@@ -2949,7 +2971,7 @@ IDE_Morph.prototype.fixLayout = function (situation) {
     this.oldSpriteBar.setWidth(
       Math.max(0, this.stage.left() - padding - this.oldSpriteBar.left())
     );
-    this.oldSpriteBar.setHeight(28);
+    this.oldSpriteBar.setHeight(44);
     this.oldSpriteBar.fixLayout();
 
     // spriteEditor
@@ -3106,7 +3128,7 @@ IDE_Morph.prototype.render = function (ctx) {
     // in presentation mode
     frame = this.stage.bounds.translateBy(this.position().neg()).expandBy(2);
     ctx.strokeStyle = (
-      this.isBright ? this.backgroundColor : this.groupColor
+      this.isBright ? this.frameColor : this.groupColor
     ).toString();
     ctx.lineWidth = 1;
     ctx.beginPath();
